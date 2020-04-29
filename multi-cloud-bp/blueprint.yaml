@@ -1,0 +1,137 @@
+formatVersion: 1
+name: Multi-Cloud Deployment-Do-NOT-Modify
+version: 1
+inputs:
+  SelectCloud:
+    type: string
+    enum:
+      - Azure
+      - AWS
+      - vSphere
+    default: Azure
+  SelectCloud2:
+    type: string
+    enum:
+      - Azure
+      - AWS
+      - vSphere
+    default: AWS
+  SelectCloud3:
+    type: string
+    enum:
+      - Azure
+      - AWS
+      - vSphere
+    default: vSphere
+  hostname1:
+    type: string
+    default: azure-machine
+  hostname2:
+    type: string
+    default: aws-machine
+  hostname3:
+    type: string
+    default: vsphere-machine
+  user:
+    type: string
+    title: Username for SSH
+    description: The username you would like to have for the installation.
+    default: demouser
+  password:
+    type: string
+    pattern: '[a-z0-9A-Z@#$]+'
+    encrypted: true
+    default: VMware1!
+    title: Admin Account Password
+    description: The password you would like to use for the System.
+resources:
+  Cloud_Machine_1:
+    type: Cloud.Machine
+    metadata:
+      layoutPosition:
+        - 0
+        - 0
+    properties:
+      image: Ubuntu-16
+      flavor: Medium
+      cloudConfig: |
+        #cloud-config
+        hostname: ${input.hostname1}
+
+        packages:
+          - apache2
+
+        users:
+          - name: ${input.user}
+            sudo: ['ALL=(ALL) NOPASSWD:ALL']
+            groups: sudo
+            shell: /bin/bash
+
+        runcmd:
+          - PASS=${input.password}
+          - USER=${input.user}
+          - echo $USER:$PASS | /usr/sbin/chpasswd
+          - sed -i "s/PasswordAuthentication no/PasswordAuthentication yes/g" /etc/ssh/sshd_config
+          - service ssh reload
+      constraints:
+        - tag: '${"env:" + to_lower(input.SelectCloud)}'
+  Cloud_Machine_2:
+    type: Cloud.Machine
+    metadata:
+      layoutPosition:
+        - 0
+        - 1
+    properties:
+      image: Ubuntu-16
+      flavor: Medium
+      cloudConfig: |
+        #cloud-config
+        hostname: ${input.hostname2}
+
+        packages:
+          - nginx
+
+        users:
+          - name: ${input.user}
+            sudo: ['ALL=(ALL) NOPASSWD:ALL']
+            groups: sudo
+            shell: /bin/bash
+
+        runcmd:
+          - PASS=${input.password}
+          - USER=${input.user}
+          - echo $USER:$PASS | /usr/sbin/chpasswd
+          - sed -i "s/PasswordAuthentication no/PasswordAuthentication yes/g" /etc/ssh/sshd_config
+          - service ssh reload
+      constraints:
+        - tag: '${"env:" + to_lower(input.SelectCloud2)}'
+  Cloud_Machine_3:
+    type: Cloud.Machine
+    metadata:
+      layoutPosition:
+        - 0
+        - 2
+    properties:
+      image: Ubuntu-16
+      flavor: Medium
+      cloudConfig: |
+        #cloud-config
+        hostname: ${input.hostname3}
+
+        packages:
+          - nginx
+
+        users:
+          - name: ${input.user}
+            sudo: ['ALL=(ALL) NOPASSWD:ALL']
+            groups: sudo
+            shell: /bin/bash
+
+        runcmd:
+          - PASS=${input.password}
+          - USER=${input.user}
+          - echo $USER:$PASS | /usr/sbin/chpasswd
+          - sed -i "s/PasswordAuthentication no/PasswordAuthentication yes/g" /etc/ssh/sshd_config
+          - service ssh reload
+      constraints:
+        - tag: '${"env:" + to_lower(input.SelectCloud3)}'

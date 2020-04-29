@@ -1,0 +1,41 @@
+formatVersion: 1
+name: Ansible-Tomcat-Do-NOT-Modify
+version: 1
+inputs:
+  Playbooks:
+    type: string
+    enum:
+      - /etc/ansible/playbooks/tomcatandjava.yml
+resources:
+  Cloud_Ansible_1:
+    type: Cloud.Ansible
+    properties:
+      host: '${resource.Cloud_Machine_1.*}'
+      osType: linux
+      account: Field Demo Ansible OSS
+      username: root
+      privateKeyFile: /root/.ssh/id_rsa
+      playbooks:
+        provision:
+          - '${input.Playbooks}'
+      inventoryFile: /etc/ansible/hosts
+      maxConnectionRetries: 10
+  Cloud_Machine_1:
+    type: Cloud.Machine
+    metadata:
+    properties:
+      image: CentOS
+      flavor: small
+      tags:
+        - key: source
+          value: ansible
+      networks:
+        - network: '${resource.Cloud_Network_1.id}'
+      constraints:
+        - tag: 'env:vsphere'
+  Cloud_Network_1:
+    type: Cloud.Network
+    properties:
+      networkType: existing
+      constraints:
+        - tag: 'env:vsphere'

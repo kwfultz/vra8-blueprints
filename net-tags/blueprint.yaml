@@ -1,0 +1,53 @@
+name: On-Demand-Network-Tags-Do-NOT-Modify
+formatVersion: 1
+version: 1
+inputs: {}
+resources:
+  Web-VM:
+    type: Cloud.Machine
+    metadata:
+      layoutPosition:
+        - 0
+        - 0
+    properties:
+      image: Ubuntu-18
+      flavor: small
+      tags:
+        - key: web
+          value: apache
+      networks:
+        - network: '${resource.NSX.id}'
+          tags:
+            - key: web
+              value: apache
+      constraints:
+        - tag: 'env:vsphere'
+  NSX:
+    type: Cloud.NSX.Network
+    metadata:
+      layoutPosition:
+        - 1
+        - 0
+    properties:
+      networkType: outbound
+      constraints:
+        - tag: 'net:ondemand'
+  DB-VM:
+    type: Cloud.Machine
+    metadata:
+      layoutPosition:
+        - 2
+        - 0
+    properties:
+      image: Ubuntu-18
+      flavor: small
+      tags:
+        - key: db
+          value: mysql
+      networks:
+        - network: '${resource.NSX.id}'
+          tags:
+            - key: db
+              value: mysql
+      constraints:
+        - tag: 'env:vsphere'

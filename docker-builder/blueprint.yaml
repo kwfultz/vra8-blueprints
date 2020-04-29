@@ -1,0 +1,53 @@
+name: Docker-Builder-Do-Not-Modify
+version: 1
+formatVersion: 1
+inputs: {}
+resources:
+  Cloud_Network_1:
+    type: Cloud.Network
+    metadata:
+      layoutPosition:
+        - 0
+        - 0
+    properties:
+      networkType: existing
+      constraints:
+        - tag: 'env:aws'
+  Cloud_Machine_1:
+    type: Cloud.Machine
+    metadata:
+      layoutPosition:
+        - 1
+        - 0
+    properties:
+      image: Ubuntu-16
+      flavor: medium
+      constraints:
+        - tag: 'env:aws'
+      networks:
+        - network: '${resource.Cloud_Network_1.id}'
+          assignPublicIpAddress: 1
+      cloudConfig: |
+        packages:
+         - curl
+
+        users:
+          - name: demouser
+            sudo: ['ALL=(ALL) NOPASSWD:ALL']
+            groups: sudo
+            shell: /bin/bash
+
+        runcmd:
+          - USER=demouser
+          - PASS=vRealiz3!
+          - echo $USER:$PASS | /usr/sbin/chpasswd
+          - echo $USER:$PASS | /usr/sbin/chpasswd
+          - sed -i "s/PasswordAuthentication no/PasswordAuthentication yes/g" /etc/ssh/sshd_config
+          - service ssh reload
+          - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+          - add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+          - apt-get update
+          - apt-get install -y docker-ce
+          - usermod -aG docker demouser
+          - su - demouser
+          - echo "Done" >> /tmp/environment.txt

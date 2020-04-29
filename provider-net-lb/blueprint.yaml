@@ -1,0 +1,30 @@
+name: Provider-Network-and-Load-Balancer-Do-NOT-Modify
+formatVersion: 1
+version: 1
+inputs: {}
+resources:
+  Provider-Load-Balancer:
+    type: Cloud.LoadBalancer
+    metadata:
+      layoutPosition:
+        - 0
+        - 0
+    properties:
+      routes:
+        - protocol: HTTP
+          port: 80
+          instanceProtocol: HTTP
+          instancePort: 80
+      network: '${resource.Cloud_NSX_Network_1.id}'
+      instances: []
+      internetFacing: true
+  Cloud_NSX_Network_1:
+    type: Cloud.NSX.Network
+    metadata:
+      layoutPosition:
+        - 1
+        - 0
+    properties:
+      networkType: outbound
+      constraints:
+        - tag: 'net:ondemand'

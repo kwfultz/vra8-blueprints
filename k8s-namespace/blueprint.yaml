@@ -1,0 +1,28 @@
+formatVersion: 1
+name: K8s-Namespace-Do-NOT-Modify
+version: 1
+inputs:
+  nsname:
+    type: string
+    pattern: '[a-z0-9]'
+    title: Enter Name for New Namespace
+    description: Namespace Name
+  environment:
+    type: string
+    enum:
+      - Dev
+      - Prod
+    default: Dev
+    title: Select Environment for New Namespace
+    description: Target Environment
+resources:
+  Cloud_K8S_Namespace_1:
+    type: Cloud.K8S.Namespace
+    metadata:
+      layoutPosition:
+        - 0
+        - 0
+    properties:
+      name: '${input.nsname}'
+      constraints:
+        - tag: '${input.environment == "Prod" ? "k8s:prod" : "k8s:dev"}'

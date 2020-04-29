@@ -1,0 +1,85 @@
+name: Rename VM ABX-Do-NOT-Modify
+version: 1
+formatVersion: 1
+inputs:
+  user:
+    type: string
+    title: Username for SSH
+    description: The username you would like to usee for admin.
+    default: demouser
+  password:
+    type: string
+    pattern: '[a-z0-9A-Z@#$]+'
+    encrypted: true
+    default: vRealiz3!
+    title: Admin Account Password
+    description: The password you would like to use for the ocuser account.
+  MachineName:
+    type: string
+    title: Name for the VM
+    description: Enter Name for VM.
+  environment:
+    type: string
+    enum:
+      - AWS
+      - Azure
+      - vSphere
+    default: vSphere
+    title: Select Environment for Deployment
+    description: Target Environment
+resources:
+  ubuntuserver:
+    type: Cloud.Machine
+    metadata:
+      layoutPosition:
+        - 0
+        - 1
+    properties:
+      image: Ubuntu-16
+      flavor: Medium
+      newName: '${input.MachineName}'
+      funny: Stuff
+      folderName: '${input.environment == "VMC" ? "Workloads" : ""}'
+      cloudConfig: |
+        packages:
+         - nginx
+
+        rsyslog:
+            remotes:
+                log_serv: "*.* @10.196.206.47:514"
+
+        users:
+          - name: ${input.user}
+            sudo: ['ALL=(ALL) NOPASSWD:ALL']
+            groups: sudo
+            shell: /bin/bash
+
+        runcmd:
+          - USER=${input.user}
+          - PASS=${input.password}
+          - echo $USER:$PASS | /usr/sbin/chpasswd
+          - echo $USER:$PASS | /usr/sbin/chpasswd
+          - sed -i "s/PasswordAuthentication no/PasswordAuthentication yes/g" /etc/ssh/sshd_config
+          - service ssh reload
+          - export cloudip=$(curl http://checkip.amazonaws.com/)
+          - export onpremip=$(ip route get 8.8.8.8 | awk -F"src " 'NR==1{split($2,a," ");print a[1]}')
+          - export ip4=${input.environment == "vSphere" ? "$onpremip" : (input.environment == "VMC" ? "$onpremip" : "$cloudip")}
+          - echo $ip4 >> /tmp/environment.txt
+          - echo "Done" >> /tmp/environment.txt
+      constraints:
+        - tag: '${"env:" + to_lower(input.environment)}'
+      networks:
+        - name: '${resource.Cloud_Network_1.name}'
+          network: '${resource.Cloud_Network_1.id}'
+          assignPublicIpAddress: 1
+  Cloud_Network_1:
+    type: Cloud.Network
+    metadata:
+      layoutPosition:
+        - 1
+        - 0
+    properties:
+      name: Field-Demo
+      networkType: existing
+      constraints:
+        - tag: '${"env:" + to_lower(input.environment)}'

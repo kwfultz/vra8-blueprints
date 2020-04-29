@@ -1,0 +1,27 @@
+name: Ent-PKS-Cluster-Do-NOT-Modify
+version: 1
+formatVersion: 1
+inputs:
+  cluster-name:
+    type: string
+    title: Cluster Name
+    default: CHANGE-ME-NO-SPACES
+    description: 'This is the cluster name. It should NOT contain spaces, only dashes (ex. pks-dev-cluster)'
+  cluster-hostname:
+    type: string
+    title: Cluster Hostname
+    description: This is the DNS name for the cluster (ex. test.pks.domain.local). You will access the cluster through IP not DNS currently.
+resources:
+  Cloud_K8S_Cluster_1:
+    type: Cloud.K8S.Cluster
+    metadata:
+      layoutPosition:
+        - 0
+        - 0
+    properties:
+      # This is the cluster name. It should NOT contain spaces, only dashes (ex. pks-dev-cluster)
+      name: '${input.cluster-name}'
+      # This is the DNS name for the cluster (ex. test.pks.domain.local). You will access the cluster through IP not DNS currently.
+      hostname: '${input.cluster-hostname}'
+      constraints:
+        - tag: 'pks:dev'
