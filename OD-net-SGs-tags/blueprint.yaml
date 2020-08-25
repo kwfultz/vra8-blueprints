@@ -10,11 +10,21 @@ resources:
     properties:
       securityGroupType: new
       rules:
-        - name: https-wr
+        - name: http-lab
           direction: inbound
           protocol: TCP
-          ports: 443
-          source: any
+          ports: '80, 443'
+          source: ANY
+          access: Allow
+        - name: ssh-lab
+          direction: inbound
+          protocol: TCP
+          ports: 22
+          source: ANY
+          access: Deny
+      tags:
+        - key: web
+          value: https
   Web:
     type: Cloud.vSphere.Machine
     metadata:
@@ -26,12 +36,12 @@ resources:
       flavor: medium
       tags:
         - key: web
-          value: apache
+          value: nginx
       networks:
         - network: '${resource.NSX.id}'
           tags:
             - key: web
-              value: apache
+              value: nginx
           securityGroups:
             - '${resource["web-sg"].id}'
       constraints:
@@ -43,12 +53,14 @@ resources:
         - 2
         - 0
     properties:
-      networkType: outbound
+      networkType: routed
       constraints:
         - tag: 'net:od'
       tags:
         - key: web
-          value: apache-mysql
+          value: nginx
+        - key: db
+          value: mysql
   DB:
     type: Cloud.vSphere.Machine
     metadata:
@@ -57,7 +69,7 @@ resources:
         - 1
     properties:
       image: ubuntu
-      flavor: medium
+      flavor: small
       tags:
         - key: db
           value: mysql
@@ -84,3 +96,7 @@ resources:
           protocol: TCP
           ports: 3306
           source: any
+          access: Allow
+      tags:
+        - key: db
+          value: mysql
