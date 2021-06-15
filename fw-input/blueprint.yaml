@@ -1,0 +1,69 @@
+formatVersion: 1
+inputs:
+  Name:
+    type: string
+    title: Rule Name
+    description: Firewall Rule Name
+  Source:
+    type: string
+    title: Source
+    description: 'Any, CIDR, IP, IP range'
+  Protocol:
+    type: string
+    title: Protocol
+    description: 'TCP, UDP, ICMP'
+  Ports:
+    type: string
+    title: Ports
+    description: 'Choose a port, range of ports, or comma separated'
+  Access:
+    type: string
+    description: Firewall access
+    enum:
+      - Allow
+      - Deny
+      - Drop
+resources:
+  Cloud_SecurityGroup_1:
+    type: Cloud.SecurityGroup
+    metadata:
+      layoutPosition:
+        - 0
+        - 1
+    properties:
+      securityGroupType: new
+      rules:
+        - name: '${input.Name}'
+          source: '${input.Source}'
+          protocol: '${input.Protocol}'
+          ports: '${input.Ports}'
+          direction: inbound
+          access: '${input.Access}'
+  Cloud_Machine_1:
+    type: Cloud.Machine
+    metadata:
+      layoutPosition:
+        - 0
+        - 2
+    properties:
+      image: Ubuntu
+      flavor: Small
+      networks:
+        - network: '${resource.Cloud_NSX_Network_1.id}'
+          securityGroups:
+            - '${resource.Cloud_SecurityGroup_1.id}'
+      constraints:
+        - tag: 'env:vsphere'
+      #ignoreActiveDirectory: true
+      activeDirectory:
+        relativeDN: 'OU=CMBU-Computers,OU=CMBU'
+  Cloud_NSX_Network_1:
+    type: Cloud.NSX.Network
+    metadata:
+      layoutPosition:
+        - 1
+        - 0
+    properties:
+      networkType: existing
+      constraints:
+        - tag: 'net:nsx-ex'
